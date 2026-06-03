@@ -1,0 +1,94 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'medinfo/css/style.css' %}">
+
+    <title>Проверка прикрепления к мед.организации</title>
+</head>
+
+<body>
+    <div class="container">
+        <h2>🏥 Проверка прикрепления<br>к мед.организации</h2>
+
+        <form method="post" id="medForm">
+            {% csrf_token %}
+
+            <div class="form-section">
+                <h3>Поиск по номеру полиса (ЕНП)</h3>
+                <input type="text" name="enp" placeholder="Например: 7594045746370284"
+                    value="{{ request.POST.enp|default:'' }}" maxlength="16">
+            </div>
+
+            <div class="divider">или</div>
+
+            <div class="form-section">
+                <h3>Поиск по ФИО и дате рождения</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Фамилия</label>
+                        <input type="text" name="fam" placeholder="Фамилия" value="{{ request.POST.fam|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Имя</label>
+                        <input type="text" name="im" placeholder="Имя" value="{{ request.POST.im|default:'' }}">
+                    </div>
+                </div>
+                <div class="form-row" style="margin-top: 10px;">
+                    <div class="form-group">
+                        <label>Отчество</label>
+                        <input type="text" name="ot" placeholder="Отчество" value="{{ request.POST.ot|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Дата рождения</label>
+                        <input type="text" name="dr" placeholder="ДД.ММ.ГГГГ" value="{{ request.POST.dr|default:'' }}">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-submit">Проверить прикрепление</button>
+            <button type="button" class="btn btn-remove">Очистить данные</button>
+        </form>
+
+        {% if result %}
+        <div class="result {{ result.status }} show">
+            <h3>Результат поиска:</h3>
+
+            {% if result.status == 'not_found' %}
+            <p class="message">{{ result.message }}</p>
+
+            {% else %}
+            <p class="person-name">{{ result.person.fio }}, {{ result.person.dr }}</p>
+            <p class="message">{{ result.message }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+    <script>
+        const removeBtn = document.querySelector('.btn-remove');
+        const submitBtn = document.querySelector('.btn-submit');
+        const formGroup = document.querySelectorAll('.form-group');
+        const medForm = document.getElementById('medForm');
+
+        const inputs = document.querySelectorAll('input[type="text"]');
+
+        const result = document.querySelector('.result');
+
+        removeBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            inputs.forEach(item => item.value = '');
+            // formGroup.forEach(item => item.children[1].value = '');
+        });
+
+        // medForm.addEventListener('submit', function(e){
+        //     e.preventDefault();
+        // })
+    </script>
+
+</html>
