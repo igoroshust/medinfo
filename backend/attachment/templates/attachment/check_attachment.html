@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'medinfo/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'attachment/css/style.css' %}">
 
     <title>Проверка прикрепления к мед.организации</title>
 </head>
@@ -68,27 +68,8 @@
         </div>
         {% endif %}
     </div>
+
+    <script src="{% static 'attachment/js/scripts.js' %}"></script>
 </body>
-
-    <script>
-        const removeBtn = document.querySelector('.btn-remove');
-        const submitBtn = document.querySelector('.btn-submit');
-        const formGroup = document.querySelectorAll('.form-group');
-        const medForm = document.getElementById('medForm');
-
-        const inputs = document.querySelectorAll('input[type="text"]');
-
-        const result = document.querySelector('.result');
-
-        removeBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            inputs.forEach(item => item.value = '');
-            // formGroup.forEach(item => item.children[1].value = '');
-        });
-
-        // medForm.addEventListener('submit', function(e){
-        //     e.preventDefault();
-        // })
-    </script>
 
 </html>

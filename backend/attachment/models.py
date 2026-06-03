@@ -15,7 +15,7 @@ class People(models.Model):
     lpu = models.CharField(max_length=6, blank=True, verbose_name='Код мед.орг.')
     lpudt = models.DateField(null=True, blank=True, verbose_name='Дата прикрепления')
     lpudx = models.DateField(null=True, blank=True, verbose_name='Дата открепления')
-    lpuuch = models.CharField(max_length=10, blank=True, verbose_name='Код участка (устарел)')
+    lpuuch = models.CharField(max_length=10, blank=True, verbose_name='Код участка')
 
     def __str__(self):
         """Строкое представление данных таблицы"""

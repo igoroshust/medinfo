@@ -2,7 +2,7 @@ import os
 import sys
 import django
 
-# Добавляем путь к корню проекта
+# Добавение пути к корню проекта
 sys.path.append('.')  # текущая директория
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 django.setup()
@@ -11,7 +11,7 @@ django.setup()
 from datetime import date
 from attachment.models import People, HistLpu, Lpu, T001, T007
 
-# Очистка
+# Очистка записей
 HistLpu.objects.all().delete()
 People.objects.all().delete()
 Lpu.objects.all().delete()
