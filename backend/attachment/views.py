@@ -25,7 +25,7 @@ def check_attachment(request):
     elif input_fam and input_im and input_dr:
         # Поиск по ФИО и дате рождения
         try:
-            dr_date = datetime.strptime(input_dr, "%d.%m.%Y").date()
+            dr_date = datetime.strptime(input_dr, "%d.%m.%Y").date()  # xxxx-xx-xx
             person = People.objects.filter(
                 fam__iexact=input_fam,
                 im__iexact=input_im,
