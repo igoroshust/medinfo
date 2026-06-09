@@ -1,0 +1,113 @@
+from django.shortcuts import render
+from datetime import datetime
+from models import People, HistLpu, T001, T007
+
+def check_attachment(request):
+    """Проверка прикрепления к мед.организации"""
+    
+    context = {'result': None}
+    
+    # Получаем параметры из POST-запроса
+    input_enp = request.POST.get('enp', '').strip().upper()
+    input_fam = request.POST.get('fam', '').strip().upper()
+    input_im = request.POST.get('im', '').strip().upper()
+    input_ot = request.POST.get('ot', '').strip().upper()
+    input_dr = request.POST.get('dr', '').strip().upper()
+    
+    # 1. Поиск человека (либо по ЕНП, либо по ФИО+др)
+    person = None
+    
+    if input_enp:
+        # Поиск по номеру полиса
+        person = People.objects.filter(enp=input_enp).first()
+        
+    elif input_fam and input_im and input_dr:
+        # Поиск по ФИО и дате рождения
+        try:
+            dr_date = datetime.strftime(input_dr, "%d.%m.%Y").date()
+            person = People.objects.filter(
+                fam__iexact=input_fam,
+                im__iexact=input_im,
+                ot__iexact=input_ot,  
+                dr=dr_date
+            ).first()
+        except ValueError:
+            pass
+        
+        """
+        SELECT * FROM people
+        WHERE UPPER(fam) = UPPER('иванов'); --регистронезависимый поиск
+        """
+        
+        
+    # Человек не найден
+    if not person:
+        context['result'] = {
+            'status': 'not_found',
+            'message': 'Такой полис не найден'
+        } # {'result': {'status': 'not_found', 'message': 'Такой полис не найден'}}
+        return render(request, 'attachment/check_attachment.html', context)
+    
+    # Человек найден - проверяем статус прикрепления
+    result = {
+        'person': {
+            'fio': f"{person.fam} {person.im} {person.ot}".strip(),
+            'dr': person.dr.strftime('%d.%m.%Y')
+        },
+        'status': None,
+        'lpu': None,
+        'subdiv': None,
+        'district': None,
+    }
+    
+    # Правило:если lpu не заполнено или заполнено ipudx -> не прикреплён
+    if not person.lpu:
+        result['status'] = 'not_attached'
+        result['message'] = 'не прикреплен(-a)'
+        
+    elif person.lpudx:
+        result['status'] = 'not_attached'
+        result['message'] = 'не прикреплен(-а)'
+        
+    else:
+        # Прикреплён - ищем название ЛПУ
+        lpu_obj = Lpu.objects.filter(code=person.lpu).first()
+        result['lpu'] = lpu_obj.caption if lpu_obj else "Неизвестная мед. организация"
+        
+        # Ищем детализацию в HISTLPU (текущая запись без даты открепления)
+        hist = HistLpu.objects.filter(
+            pid=person,
+            lpu=person.lpu,
+            lpudx__isnull=True
+        ).order_by('-lpudt').first()
+        
+        if hist:
+            # Подразделение (T001)
+            if hist.district:
+                district = T001.objects.filter(
+                    mcod=person.lpu,
+                    nom_podr=hist.district
+                ).first()
+                result['district'] = district.nam_mo if district else None
+                
+            # Участок (T007)
+            if hist.subdiv:
+                subdiv = T007.objects.filter(
+                    code_mo=person.lpu,
+                    depth=hist.subdiv
+                ).first()
+                result['subdiv'] = subdiv.name_depth if subdiv else None
+                
+        result['status'] = 'attached'
+        
+        # Формируем сообщение
+        msg_parts = [f"прикреплен(-а) к {result['lpu']}"]
+        if result['district']:
+            msg_parts.append(result['district'])
+        if result['subdiv']:
+            msg_parts.append(result['subdiv'])
+        result['message'] = ', '.join(msg_parts)
+        
+    context['result'] = result
+    
+    return render(request, 'attachment/check_attachment.html', context)

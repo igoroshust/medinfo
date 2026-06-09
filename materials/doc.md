@@ -1,6 +1,8 @@
 ## Типы связей в Django
+
 1. ForeignKey - многие к одному
-Многие записи HistLpu могут ссылаться на одну People.
+   Многие записи HistLpu могут ссылаться на одну People.
+
 ```python
 class HistLpu(models.Model):
     pid = models.ForeignKey(People, on_delete=models.CASCADE, related_name='history')
@@ -10,64 +12,77 @@ class HistLpu(models.Model):
 ```
 
 - Обращение к записи People
+
 ```bash
 hist.pid
 ```
 
 - Обращение к истории People
+
 ```bash
 people.history.all()
 ```
 
 2. OneToOneField - один к одному
-Одна запись связана только с одной другой записью
+   Одна запись связана только с одной другой записью
+
 ```python
 class Profile(models.Model):
     user = models.OneToOneField(User, related_name='profile')
 
 # User (1) <- Profile (1)
 ```
+
 - Профиль пользователя
+
 ```bash
 user.profile
 ```
 
 - Пользователь профиля
+
 ```bash
 profile.user
 ```
 
 3. ManyToManyField - многие ко многим
-Многие записи могут ссылаться на многие другие
+   Многие записи могут ссылаться на многие другие
+
 ```python
 class Student(models.Model):
     courses = models.ManyToManyField(Course, related_name='students')
 # Student (Много) <- Course (много)
 ```
+
 - Все курсы студента
+
 ```bash
 student.courses.all()
 ```
 
 - Все студенты курса
+
 ```bash
 course.students.all()
 ```
 
-
 ## Механизм обратного связывания
+
 При создании внешнего ключа
+
 ```python
 class HistLpu(models.Model):
     pid = models.ForeignKey(People, related_name='history')
 ```
 
 Джанго автоматически создаёт обратную связь
+
 ```bash
 People (родитель) -> .history -> все HistLpu, связанные с этим People
 ```
 
 **Пример:**
+
 ```python
 # Модели
 class People(models.Model):
@@ -93,6 +108,7 @@ person.history.all()  # <QuerySet [...]>
 ```
 
 Если не указывать `related_name`, Django использует имя модели с суффиксом `_set`:
+
 ```python
 class HistLpu(models.Model):
     pid = models.ForeignKey(People, on_delete=models.CASCADE)
@@ -102,3 +118,8 @@ person.histlpu_set.all()  # автогенерируемое имя
 ```
 
 Без `related_name` Django автоматически создаёт `modelname_set`.
+
+
+## Lookups
+
+![1781013209906](image/doc/1781013209906.png)
